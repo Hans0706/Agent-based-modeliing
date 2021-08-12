@@ -9,6 +9,8 @@ import java.util.Random;
 import java.lang.Math;
 
 public class Labor extends Agent<TradingModel.Globals> {
+
+    //TODO: if you want to expose all of these variables in the console each one will need a @Variable annotation
     @Variable
     public double wages;     //wage rate
     public double number;   //household numbers
@@ -38,9 +40,9 @@ public class Labor extends Agent<TradingModel.Globals> {
         number = 50;
         wages = 2000;
         tax = 0.07;
-        buyValue=10;
-        sellValue=10;
-        carbon_em=15.2;
+        buyValue = 10;
+        sellValue = 10;
+        carbon_em = 15.2;
     }
 
     private static Action<Labor> action(SerializableConsumer<Labor> consumer) {
@@ -56,8 +58,8 @@ public class Labor extends Agent<TradingModel.Globals> {
                         labor.EIG = mes.EIG;
 
                     });
-                    labor.getMessagesOfType(Messages.SendenergyPrice.class).forEach(mes->{
-                        labor.enPrice=mes.price;
+                    labor.getMessagesOfType(Messages.SendenergyPrice.class).forEach(mes -> {
+                        labor.enPrice = mes.price;
                     });
                     if (informationSignal > labor.tradingThresh || informationSignal < -labor.tradingThresh) {
 

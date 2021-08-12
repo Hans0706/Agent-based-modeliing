@@ -28,7 +28,6 @@ public class EntechFirm extends Agent<TradingModel.Globals>{
     public double LBS;
 
 
-
     @Override
     public void init() {
         AET=11.1;

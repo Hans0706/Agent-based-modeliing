@@ -21,6 +21,8 @@ public class CoFirm extends Agent<TradingModel.Globals> {
     public double wage;
     public double enPrice;
 
+
+    //TODO: pull these into the setup() phase of your model and expose them as inputs
     @Override
     public void init() {
         demand = 500;
