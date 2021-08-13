@@ -3,11 +3,11 @@ package models.trading;
 import simudyne.core.abm.AgentBasedModel;
 import simudyne.core.abm.GlobalState;
 import simudyne.core.abm.Group;
+import simudyne.core.abm.Split;
 import simudyne.core.annotations.Constant;
 import simudyne.core.annotations.Input;
 import simudyne.core.annotations.ModelSettings;
 import simudyne.core.annotations.Variable;
-import simudyne.core.rng.SeededRandom;
 
 import java.util.Random;
 
@@ -132,8 +132,6 @@ public class TradingModel extends AgentBasedModel<TradingModel.Globals> {
 //        getGlobals().temperature_list = getGlobals().readfile('D:\\simudyne\\stock-model\\stock_model\\src\\main\\java\\models\\trading\\temperature.csv');
 
 
-
-
         //TODO: remove the init function in each agent and open a lambda for each agent
         // initialize the agents parameters from here
         Group<Labor> laborGroup = generateGroup(Labor.class, 50);
@@ -196,13 +194,31 @@ public class TradingModel extends AgentBasedModel<TradingModel.Globals> {
 
 //        run(Labor.updateWage(),CaFirm.conductBehavior,CoFirm.conductBehavior);
 //        run(EntechFirm.calcCost,EnproFirm.conductBehavior);
-        run(Labor.updateLP());
-        run(Labor.updateWage());
+        run(Labor.updateLP(), CoFirm.receiveLPChange);
+        run(Labor.updateWage(),
+                Split.create(
+                        CoFirm.receiveWage,
+                        CaFirm.receiveWage,
+                        Country.receiveWage));
 //       CaFirm.conductBehavior,CoFirm.conductBehavior,Labor.processInformation());
-        run(Labor.processInformation());
+        run(CaFirm.sendEIChange,
+                Split.create(
+                        Labor.receiveEIChange(),
+                        CoFirm.receiveEIChange));
+        run(
+                EntechFirm.calcCost,
+                EnproFirm.sendEnergyPrice,
+                Split.create(
+                        CoFirm.receiveEnergyPrice,
+                        Labor.receiveEnergyPrice(),
+                        CaFirm.receiveEnergyPrices,
+                        Country.receiveEnergyPrices
+                        ),
+                Country.receiveTax);
+
         run(CoFirm.conductBehavior);
         run(CaFirm.conductBehavior);
-        run(EntechFirm.calcCost, EnproFirm.conductBehavior);
+
         run(EntechFirm.sendTax);
         run(Country.updateTax);
 //        run(EnproFirm.conductBehavior,Country.updateTax);

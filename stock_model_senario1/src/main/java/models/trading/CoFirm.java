@@ -35,23 +35,35 @@ public class CoFirm extends Agent<TradingModel.Globals> {
 
     }
 
-    public static Action<CoFirm> conductBehavior =
 
+    public static Action<CoFirm> receiveLPChange =
             Action.create(CoFirm.class, coFirm -> {
-                coFirm.desProduction = coFirm.demand + coFirm.desDemand - coFirm.stock;
+                coFirm.getMessagesOfType(Messages.LPChange.class).forEach(mes -> {
+//                    Random r = new Random();
+                    coFirm.lp = mes.averageLP1;
+                    coFirm.lp = mes.averageLP1;
+                });
+            });
+
+    public static Action<CoFirm> receiveWage =
+            Action.create(CoFirm.class, coFirm -> {
                 coFirm.getMessagesOfType(Messages.WageChange.class).forEach(mes -> {
                     coFirm.wage = mes.wage;
                 });
+            });
+
+    public static Action<CoFirm> receiveEIChange =
+            Action.create(CoFirm.class, coFirm -> {
                 coFirm.getMessagesOfType(Messages.EIChange.class).forEach(mes -> {
                     coFirm.EIA = mes.EIA;
                     coFirm.EIG = mes.EIG;
                 });
-                coFirm.getMessagesOfType(Messages.LPChange.class).forEach(mes -> {
-//                    Random r = new Random();
-                    coFirm.lp = mes.averageLP1;
-                });
-                coFirm.getMessagesOfType(Messages.SendenergyPrice.class).forEach(mes->{
-                    coFirm.enPrice=mes.price;
+            });
+
+    public static Action<CoFirm> receiveEnergyPrice =
+            Action.create(CoFirm.class, coFirm -> {
+                coFirm.getMessagesOfType(Messages.SendenergyPrice.class).forEach(mes -> {
+                    coFirm.enPrice = mes.price;
                 });
                 coFirm.produceCost = (coFirm.wage / coFirm.lp) + coFirm.EIA * coFirm.getGlobals().enPrice * 1000;
                 coFirm.useCost = coFirm.EIG * coFirm.enPrice;
@@ -59,12 +71,24 @@ public class CoFirm extends Agent<TradingModel.Globals> {
                 coFirm
                         .getLinks(Links.CoFtoGovern.class)
                         .send(Messages.sendTax.class, (msg, link) -> {
-                            msg.CoF_tax = (coFirm.produceCost+coFirm.useCost)*coFirm.getGlobals().c_tax*0.15;
+                            msg.CoF_tax = (coFirm.produceCost + coFirm.useCost) * coFirm.getGlobals().c_tax * 0.15;
 
 
                         });
             });
+    public static Action<CoFirm> conductBehavior =
+            Action.create(CoFirm.class, coFirm -> {
+                coFirm.desProduction = coFirm.demand + coFirm.desDemand - coFirm.stock;
+//                coFirm.getMessagesOfType(Messages.WageChange.class).forEach(mes -> {
+//                    coFirm.wage = mes.wage;
+//                });
 
+//                coFirm.getMessagesOfType(Messages.LPChange.class).forEach(mes -> {
+////                    Random r = new Random();
+//
+//                });
+
+            });
 
 
 }

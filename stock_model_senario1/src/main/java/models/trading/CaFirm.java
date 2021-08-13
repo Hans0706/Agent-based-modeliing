@@ -36,65 +36,73 @@ public class CaFirm extends Agent<TradingModel.Globals> {
 //        EIG=EIG*(1-getPrng().beta(1,3).sample());
 //        EIA=EIA*(1-getPrng().beta(1,3).sample());
 //        EIB=EIB*(1-getPrng().beta(1,3).sample());
-        EIG=100;
-        EIA=100;
-        EIB=100;
-        IN=2000;
-        IM=20000;
-        w=2000;
-        B=15;
-        m1=0.04;
+        EIG = 100;
+        EIA = 100;
+        EIB = 100;
+        IN = 2000;
+        IM = 20000;
+        w = 2000;
+        B = 15;
+        m1 = 0.04;
 
     }
-    public static Action<CaFirm> conductBehavior =
-            Action.create(CaFirm.class, caFirm -> {
-                Random r = new Random();
-                double t1 = r.nextDouble()-0.5;
-                double t2 = 0.3;
-                caFirm.getMessagesOfType(Messages.WageChange.class).forEach(mes ->{
 
+    public static Action<CaFirm> receiveWage =
+            Action.create(CaFirm.class, caFirm -> {
+                caFirm.getMessagesOfType(Messages.WageChange.class).forEach(mes -> {
                     caFirm.w = mes.wage;
                 });
+            });
+
+    public static Action<CaFirm> sendEIChange =
+            Action.create(CaFirm.class, caFirm -> {
+                Random r = new Random();
+                double t1 = r.nextDouble() - 0.5;
+                double t2 = 0.3;
+
                 caFirm.thetaIN = 1 - Math.exp(-t1 * (caFirm.IN / caFirm.w));
                 caFirm.thetaIM = 1 - Math.exp(-t2 * (caFirm.IM / caFirm.w));
-                if (caFirm.thetaIN>0){
-                    caFirm.EIG=caFirm.EIG*(1-caFirm.getPrng().beta(1,3).sample());
-                    caFirm.EIA=caFirm.EIA*(1-caFirm.getPrng().beta(1,3).sample());
-                    caFirm.EIB=caFirm.EIB*(1-caFirm.getPrng().beta(1,3).sample());
+                if (caFirm.thetaIN > 0) {
+                    caFirm.EIG = caFirm.EIG * (1 - caFirm.getPrng().beta(1, 3).sample());
+                    caFirm.EIA = caFirm.EIA * (1 - caFirm.getPrng().beta(1, 3).sample());
+                    caFirm.EIB = caFirm.EIB * (1 - caFirm.getPrng().beta(1, 3).sample());
                 }
-                caFirm.getLinks(Links.CaFtoCoF.class).send(Messages.EIChange.class,(msg,link)->{
-                    msg.EIA=caFirm.EIA;
-                    msg.EIG=caFirm.EIG;
+                caFirm.getLinks(Links.CaFtoCoF.class).send(Messages.EIChange.class, (msg, link) -> {
+                    msg.EIA = caFirm.EIA;
+                    msg.EIG = caFirm.EIG;
                 });
 
-                caFirm.getLinks(Links.CaFtoLabor.class).send(Messages.EIChange.class,(msg,link)->{
-
-
-                    msg.EIG=caFirm.EIG;
+                caFirm.getLinks(Links.CaFtoLabor.class).send(Messages.EIChange.class, (msg, link) -> {
+                    msg.EIG = caFirm.EIG;
                 });
+            });
 
-
-
-                caFirm.getMessagesOfType(Messages.LPChange.class).forEach(mes -> {
-
-                    caFirm.B=mes.averageLP2;
-
+    public static Action<CaFirm> receiveEnergyPrices =
+            Action.create(CaFirm.class, caFirm -> {
+                caFirm.getMessagesOfType(Messages.SendenergyPrice.class).forEach(mes -> {
+                    caFirm.enPrice = mes.price;
                 });
-
-                caFirm.getMessagesOfType(Messages.SendenergyPrice.class).forEach(mes->{
-                    caFirm.enPrice=mes.price;
-                });
-
-                caFirm.mcost = caFirm.w/caFirm.B+caFirm.EIG*caFirm.enPrice*1000;
-                caFirm.price = (1+caFirm.m1)*caFirm.mcost;
+                caFirm.mcost = caFirm.w / caFirm.B + caFirm.EIG * caFirm.enPrice * 1000;
+                caFirm.price = (1 + caFirm.m1) * caFirm.mcost;
 
                 caFirm
                         .getLinks(Links.CaFtoGovern.class)
                         .send(Messages.sendTax.class, (msg, link) -> {
-                            msg.CaF_tax = (caFirm.price-caFirm.mcost)*caFirm.getGlobals().c_tax;
-
-
+                            msg.CaF_tax = (caFirm.price - caFirm.mcost) * caFirm.getGlobals().c_tax;
                         });
+            });
+
+    public static Action<CaFirm> conductBehavior =
+            Action.create(CaFirm.class, caFirm -> {
+
+
+                caFirm.getMessagesOfType(Messages.LPChange.class).forEach(mes -> {
+
+                    caFirm.B = mes.averageLP2;
+
+                });
+
+
             });
 
 }

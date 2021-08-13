@@ -49,18 +49,30 @@ public class Labor extends Agent<TradingModel.Globals> {
         return Action.create(Labor.class, consumer);
     }
 
+    public static Action<Labor> receiveEIChange() {
+        return action(
+                labor -> {
+                    labor.getMessagesOfType(Messages.EIChange.class).forEach(mes -> {
+                        labor.EIG = mes.EIG;
+                    });
+                });
+    }
+    public static Action<Labor> receiveEnergyPrice() {
+        return action(
+                labor -> {
+                    labor.getMessagesOfType(Messages.SendenergyPrice.class).forEach(mes -> {
+                        labor.enPrice = mes.price;
+                    });
+                });
+    }
+
+
     public static Action<Labor> processInformation() {
         return action(
                 labor -> {
                     double informationSignal = labor.getGlobals().informationSignal;
-                    labor.getMessagesOfType(Messages.EIChange.class).forEach(mes -> {
 
-                        labor.EIG = mes.EIG;
 
-                    });
-                    labor.getMessagesOfType(Messages.SendenergyPrice.class).forEach(mes -> {
-                        labor.enPrice = mes.price;
-                    });
                     if (informationSignal > labor.tradingThresh || informationSignal < -labor.tradingThresh) {
 
                         if (informationSignal > 0) {
@@ -108,16 +120,13 @@ public class Labor extends Agent<TradingModel.Globals> {
                             .getLinks(Links.CoFtoLabor.class)
                             .send(Messages.LPChange.class, (msg, link) -> {
                                 msg.averageLP1 = labor.aveLp1;
-
-
-                            });
-                    labor
-                            .getLinks(Links.CoFtoLabor.class)
-                            .send(Messages.LPChange.class, (msg, link) -> {
                                 msg.averageLP2 = labor.aveLp2;
-
-
                             });
+//                    labor
+//                            .getLinks(Links.CoFtoLabor.class)
+//                            .send(Messages.LPChange.class, (msg, link) -> {
+//
+//                            });
                 }
 
         );

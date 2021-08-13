@@ -31,7 +31,7 @@ public class EnproFirm extends Agent<TradingModel.Globals>{
         emFactor=0.750;
         enPrice=0.1;
     }
-    public static Action<EnproFirm> conductBehavior=
+    public static Action<EnproFirm> sendEnergyPrice =
 
             Action.create(EnproFirm.class, enproFirm ->{
                 double sumCost=0;
@@ -77,8 +77,8 @@ public class EnproFirm extends Agent<TradingModel.Globals>{
 
                 enproFirm
                         .getLinks(Links.EpFtoGovern.class)
-                        .send(Messages.sendTax.class, (msg, link) -> {
-                            msg.EpF_tax = enproFirm.tax;
+                        .send(Messages.SendenergyPrice.class, (msg, link) -> {
+                            msg.price = enproFirm.enPrice;
 
 
                         });
